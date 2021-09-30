@@ -20,6 +20,10 @@ public class Istio {
           + "access point to verify that the server instance is ready for application traffic. Defaults to 8888.")
   private Integer readinessPort = 8888;
 
+  public static Integer DEFAULT_REPLICATION_PORT = 4358;
+
+  private Integer replicationChannelPort = DEFAULT_REPLICATION_PORT;
+
   /**
    * True, if this domain is deployed under an Istio service mesh.
    *
@@ -67,6 +71,14 @@ public class Istio {
     return this;
   }
 
+  public Integer getReplicationChannelPort() {
+    return replicationChannelPort;
+  }
+
+  public void setReplicationChannelPort(Integer replicationChannelPort) {
+    this.replicationChannelPort = replicationChannelPort;
+  }
+
   @Override
   public String toString() {
     ToStringBuilder builder =
@@ -74,12 +86,20 @@ public class Istio {
             .append("enabled", enabled)
             .append("readinessPort", readinessPort);
 
+    if (this.replicationChannelPort != DEFAULT_REPLICATION_PORT) {
+      builder.append("replicationPort", this.replicationChannelPort);
+    }
+
     return builder.toString();
   }
 
   @Override
   public int hashCode() {
     HashCodeBuilder builder = new HashCodeBuilder().append(enabled).append(readinessPort);
+
+    if (this.replicationChannelPort != DEFAULT_REPLICATION_PORT) {
+      builder.append(this.replicationChannelPort);
+    }
 
     return builder.toHashCode();
   }

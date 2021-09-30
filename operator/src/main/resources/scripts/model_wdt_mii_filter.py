@@ -179,6 +179,8 @@ def filter_model(model):
       if 'ServerTemplate' in topology:
         customizeServerTemplates(model)
 
+      if 'Cluster' in topology:
+        customizeIstioClusters(model)
 
 def initOfflineWlstEnv(model):
   global env
@@ -214,7 +216,6 @@ def customizeServerTemplates(model):
         customizeServerTemplate(topology, template)
 
 
-
 def customizeServerTemplate(topology, template):
   server_name_prefix = getServerNamePrefix(topology, template)
   domain_uid = env.getDomainUID()
@@ -225,9 +226,17 @@ def customizeServerTemplate(topology, template):
   setServerListenAddress(template, listen_address)
   customizeNetworkAccessPoints(template, listen_address)
   customizeManagedIstioNetworkAccessPoint(template, listen_address)
-  if (getCoherenceClusterSystemResourceOrNone(topology, template) is not None):
+  customizeIstioReplicationChannel(template, listen_address)
+  if getCoherenceClusterSystemResourceOrNone(topology, template) is not None:
     customizeCoherenceMemberConfig(template, listen_address)
 
+def customizeIstioClusters(model):
+  istio_enabled = env.getEnvOrDef("ISTIO_ENABLED", "false")
+  if istio_enabled == 'false':
+    return
+  if 'topology' in model and 'Cluster' in model['topology']:
+    for cluster in model['topology']['Cluster']:
+      model['topology']['Cluster'][cluster]['ReplicationChannel'] = 'istiorepl'
 
 def getServerNamePrefix(topology, template):
   server_name_prefix = None
@@ -317,9 +326,11 @@ def customizeServer(model, server, name):
   setServerListenAddress(server, listen_address)
   customizeNetworkAccessPoints(server,listen_address)
   customizeServerIstioNetworkAccessPoint(server, listen_address)
-  if (name == adminServer):
+  if name != adminServer:
+    customizeIstioReplicationChannel(server, listen_address)
+  if name == adminServer:
     addAdminChannelPortForwardNetworkAccessPoints(server)
-  if (getCoherenceClusterSystemResourceOrNone(model['topology'], server) is not None):
+  if getCoherenceClusterSystemResourceOrNone(model['topology'], server) is not None:
     customizeCoherenceMemberConfig(server, listen_address)
 
 
@@ -379,11 +390,12 @@ def isSecureModeEnabledForDomain(topology):
 def getSSLOrNone(server):
   if 'SSL' not in server:
     return None
-
   return server['SSL']
 
 
-def _writeIstioNAP(name, server, listen_address, listen_port, protocol, http_enabled="true", bind_to_localhost="true"):
+def _writeIstioNAP(name, server, listen_address, listen_port, protocol, http_enabled="true",
+                   bind_to_localhost="true", use_fast_serialization='false', tunneling_enabled='false',
+                   outbound_enabled='false'):
 
   if 'NetworkAccessPoint' not in server:
     server['NetworkAccessPoint'] = {}
@@ -401,10 +413,10 @@ def _writeIstioNAP(name, server, listen_address, listen_port, protocol, http_ena
   nap['PublicAddress'] = '%s.%s' % (listen_address, env.getEnvOrDef("ISTIO_POD_NAMESPACE", "default"))
   nap['ListenPort'] = listen_port
   nap['HttpEnabledForThisProtocol'] = http_enabled
-  nap['TunnelingEnabled'] = 'false'
-  nap['OutboundEnabled'] = 'true'
+  nap['TunnelingEnabled'] = tunneling_enabled
+  nap['OutboundEnabled'] = outbound_enabled
   nap['Enabled'] = 'true'
-
+  nap['UseFastSerialization'] = use_fast_serialization
 
 def customizeServerIstioNetworkAccessPoint(server, listen_address):
   istio_enabled = env.getEnvOrDef("ISTIO_ENABLED", "false")
@@ -477,6 +489,18 @@ def customizeServerIstioNetworkAccessPoint(server, listen_address):
   if isAdministrationPortEnabledForServer(server, model['topology']):
     _writeIstioNAP(name='https-admin', server=server, listen_address=listen_address,
                         listen_port=getAdministrationPort(server, model['topology']), protocol='https', http_enabled="true")
+
+def customizeIstioReplicationChannel(server, listen_address):
+  istio_enabled = env.getEnvOrDef("ISTIO_ENABLED", "false")
+  if istio_enabled == 'false' or server['Cluster'] is None :
+    return
+  listen_port = env.getEnvOrDef("ISTIO_REPLICATION_PORT", 4564)
+  _writeIstioNAP(name='istiorepl', server=server, listen_address=listen_address,
+                 listen_port=listen_port, protocol='t3', http_enabled="true", use_fast_serialization='true',
+                 tunneling_enabled='true', outbound_enabled='true', bind_to_localhost='false')
+  _writeIstioNAP(name='istiorepl2', server=server, listen_address=listen_address,
+                 listen_port=listen_port, protocol='t3', http_enabled="true", use_fast_serialization='true',
+                 bind_to_localhost='true', tunneling_enabled='true')
 
 
 def customizeManagedIstioNetworkAccessPoint(template, listen_address):

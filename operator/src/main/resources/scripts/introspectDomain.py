@@ -1034,6 +1034,7 @@ class SitConfigGenerator(Generator):
     self.customizeCustomFileStores()
     self.customizeServers()
     self.customizeServerTemplates()
+    self.customizeIstioClusters()
     self.undent()
     self.writeln("</d:domain>")
 
@@ -1056,6 +1057,18 @@ class SitConfigGenerator(Generator):
   def customizeServers(self):
     for server in self.env.getDomain().getServers():
       self.customizeServer(server)
+
+  def customizeIstioClusters(self):
+    istio_enabled = self.env.getEnvOrDef("ISTIO_ENABLED", "false")
+    if istio_enabled == 'false':
+      return
+    for cluster in self.env.getDomain().getClusters():
+      self.writeln("<d:cluster f:combine-mode='add'>")
+      self.indent()
+      self.writeln("<d:name f:combine-mode='add'>" + cluster.getName() + "</d:name>")
+      self.writeln("<d:replication-channel f:combine-mode='add'>" + 'istiorepl' + "</d:replication-channel>")
+      self.undent()
+      self.writeln("</d:cluster>")
 
   def writeListenAddress(self, originalValue, newValue):
     repVerb="\"replace\""
@@ -1278,7 +1291,6 @@ class SitConfigGenerator(Generator):
     return key + WLS_LOCALHOST_IDENTIFIER + idx_str
 
 
-
   def customizeServer(self, server):
     name=server.getName()
     listen_address=self.env.toDNS1123Legal(self.env.getDomainUID() + "-" + name)
@@ -1292,9 +1304,11 @@ class SitConfigGenerator(Generator):
     self.writeListenAddress(server.getListenAddress(),listen_address)
     self.customizeNetworkAccessPoints(server,listen_address)
     self.customizeServerIstioNetworkAccessPoint(listen_address, server)
-    if (server.getName() == admin_server_name):
+    if server.getName() != admin_server_name:
+      self.customizeIstioReplicationChannel(server, self.env.getEnvOrDef("ISTIO_REPLICATION_PORT", 4564))
+    if server.getName() == admin_server_name:
       self.addAdminChannelPortForwardNetworkAccessPoints(server)
-    if (self.getCoherenceClusterSystemResourceOrNone(server) is not None):
+    if self.getCoherenceClusterSystemResourceOrNone(server) is not None:
       self.customizeCoherenceMemberConfig(server.getCoherenceMemberConfig(),listen_address)
     self.undent()
     self.writeln("</d:server>")
@@ -1317,6 +1331,7 @@ class SitConfigGenerator(Generator):
     self.writeListenAddress(template.getListenAddress(),listen_address)
     self.customizeNetworkAccessPoints(template,listen_address)
     self.customizeManagedIstioNetworkAccessPoint(listen_address, template)
+    self.customizeIstioReplicationChannel(template, self.env.getEnvOrDef("ISTIO_REPLICATION_PORT", 4564))
     if (self.getCoherenceClusterSystemResourceOrNone(template) is not None):
       self.customizeCoherenceMemberConfig(template.getCoherenceMemberConfig(), listen_address)
     self.undent()
@@ -1509,6 +1524,23 @@ class SitConfigGenerator(Generator):
     self.undent()
     self.writeln('</d:network-access-point>')
 
+  def _writeIstioReplicationChannelNAP(self, name, server, listen_port):
+    action = 'add'
+    self.writeln('<d:network-access-point %s>' % action)
+    self.indent()
+    self.writeln('<d:name %s>%s</d:name>' % (action, 'istiorepl'))
+    self.indent()
+    self.writeln('<d:name %s>%s</d:name>' % (action, name))
+    self.writeln('<d:listen-address %s>127.0.0.1</d:listen-address>' % action)
+    self.writeln('<d:listen-port %s>%s</d:listen-port>' % (action, listen_port))
+    self.writeln('<d:http-enabled-for-this-protocol %s>true</d:http-enabled-for-this-protocol>' %
+                 (action))
+    self.writeln('<d:enabled %s>true</d:enabled>' % action)
+    self.writeln('<d:outbound-enabled %s>true</d:outbound-enabled>' % action)
+    self.writeln('<d:use-fast-serialization %s>true</d:use-fast-serialization>' % action)
+    self.undent()
+    self.writeln('</d:network-access-point>')
+
   def getCoherenceClusterSystemResourceOrNone(self, serverOrTemplate):
     try:
       cluster=serverOrTemplate.getCluster()
@@ -1674,6 +1706,12 @@ class SitConfigGenerator(Generator):
       if ssl_listen_port is not None:
         self._writeAdminChannelPortForwardNAP(name='internal-t3s', server=server,
                                               listen_port=ssl_listen_port, protocol='t3s')
+
+  def customizeIstioReplicationChannel(self, server, listen_port):
+    istio_enabled = self.env.getEnvOrDef("ISTIO_ENABLED", "false")
+    if istio_enabled == 'false' or server.getCluster() is None :
+      return
+    self._writeIstioReplicationChannelNAP('istiorepl', server, listen_port)
 
   def getLogOrNone(self,server):
     try:

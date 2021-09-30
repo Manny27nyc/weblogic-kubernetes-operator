@@ -856,6 +856,18 @@ public class DomainSpec extends BaseConfiguration {
         .orElse(8888);
   }
 
+  /**
+   * The WebLogic replication channel port used under Istio environment.
+   *
+   * @return replicationPort
+   */
+  int getIstioReplicationPort() {
+    return Optional.ofNullable(configuration)
+      .map(Configuration::getIstio)
+      .map(Istio::getReplicationChannelPort)
+      .orElse(Istio.DEFAULT_REPLICATION_PORT);
+  }
+
   String getWdtDomainType() {
     return Optional.ofNullable(configuration)
         .map(Configuration::getModel)

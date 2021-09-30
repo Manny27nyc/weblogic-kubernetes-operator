@@ -5,7 +5,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    weblogic.sha256: fc558513a2650fa19f6bb20b9bb959cdcdea01fc45a37dc3841385467b7131e8
+    weblogic.sha256: 16a4eedd83c616b84bf3748e304591327f564d51714712851aa5ee08c7552209
   name: domains.weblogic.oracle
 spec:
   group: weblogic.oracle
@@ -210,6 +210,8 @@ spec:
                   istio:
                     description: The Istio service mesh integration settings.
                     properties:
+                      replicationChannelPort:
+                        type: number
                       readinessPort:
                         description: The operator will create a WebLogic network access
                           point with this port that will then be exposed from the

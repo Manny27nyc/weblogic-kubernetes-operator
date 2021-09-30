@@ -126,6 +126,11 @@ public class IntrospectorJobEnvVars {
   public static final String ISTIO_READINESS_PORT = "ISTIO_READINESS_PORT";
 
   /**
+   * Istio replication channel port.
+   */
+  public static final String ISTIO_REPLICATION_PORT = "ISTIO_REPLICATION_PORT";
+
+  /**
    * Istio pod namespace.
    */
   public static final String ISTIO_POD_NAMESPACE = "ISTIO_POD_NAMESPACE";

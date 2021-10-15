@@ -219,7 +219,7 @@ class WdtUpdateFilterCase(unittest.TestCase):
     template_name = 'cluster-1-template'
 
     serverTemplate = topology['ServerTemplate'][template_name]
-    model_wdt_mii_filter.customizeServerTemplate(topology, serverTemplate)
+    model_wdt_mii_filter.customizeServerTemplate(topology, serverTemplate, template_name)
 
     # verify custom log in server template
     template_log_filename = serverTemplate['Log']['FileName']

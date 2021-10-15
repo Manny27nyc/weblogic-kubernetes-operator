@@ -502,7 +502,7 @@ def customizeIstioReplicationChannel(server, name, listen_address):
 
   verify_replication_port_conflict(server, name, istio_repl_listen_port)
 
-  _writeIstioNAP(name='istiorepl2', server=server, listen_address=listen_address,
+  _writeIstioNAP(name='istiorepl', server=server, listen_address=listen_address,
                  listen_port=istio_repl_listen_port, protocol='t3', http_enabled="true", use_fast_serialization='true',
                  bind_to_localhost='true', tunneling_enabled='true')
 

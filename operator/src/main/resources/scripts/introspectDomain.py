@@ -1305,7 +1305,8 @@ class SitConfigGenerator(Generator):
     self.customizeNetworkAccessPoints(server,listen_address)
     self.customizeServerIstioNetworkAccessPoint(listen_address, server)
     if server.getName() != admin_server_name:
-      self.customizeIstioReplicationChannel(server, self.env.getEnvOrDef("ISTIO_REPLICATION_PORT", 4564))
+      self.customizeIstioReplicationChannel(server, self.env.getEnvOrDef("ISTIO_REPLICATION_PORT", 4564),
+                                            is_server_template=False)
     if server.getName() == admin_server_name:
       self.addAdminChannelPortForwardNetworkAccessPoints(server)
     if self.getCoherenceClusterSystemResourceOrNone(server) is not None:
@@ -1331,7 +1332,8 @@ class SitConfigGenerator(Generator):
     self.writeListenAddress(template.getListenAddress(),listen_address)
     self.customizeNetworkAccessPoints(template,listen_address)
     self.customizeManagedIstioNetworkAccessPoint(listen_address, template)
-    self.customizeIstioReplicationChannel(template, self.env.getEnvOrDef("ISTIO_REPLICATION_PORT", 4564))
+    self.customizeIstioReplicationChannel(template, self.env.getEnvOrDef("ISTIO_REPLICATION_PORT", 4564),
+                                          is_server_template=True)
     if (self.getCoherenceClusterSystemResourceOrNone(template) is not None):
       self.customizeCoherenceMemberConfig(template.getCoherenceMemberConfig(), listen_address)
     self.undent()
@@ -1707,11 +1709,33 @@ class SitConfigGenerator(Generator):
         self._writeAdminChannelPortForwardNAP(name='internal-t3s', server=server,
                                               listen_port=ssl_listen_port, protocol='t3s')
 
-  def customizeIstioReplicationChannel(self, server, listen_port):
+  def customizeIstioReplicationChannel(self, server, listen_port, is_server_template):
     istio_enabled = self.env.getEnvOrDef("ISTIO_ENABLED", "false")
     if istio_enabled == 'false' or server.getCluster() is None :
       return
+    self._verify_replication_port_conflict(server, listen_port, is_server_template)
     self._writeIstioReplicationChannelNAP('istiorepl', server, listen_port)
+
+  def _verify_replication_port_conflict(self, server, replication_port, is_server_template):
+    name = server.getName()
+    listen_port = getRealListenPort(server)
+    ssl_listen_port = getSSLPortIfEnabled(server, self.env.getDomain(), is_server_template)
+    if listen_port == replication_port:
+      raise_replication_port_conflict(name, listen_port, replication_port, '')
+    if ssl_listen_port == replication_port:
+      raise_replication_port_conflict(name, ssl_listen_port, replication_port, 'SSL')
+
+    if server.getNetworkAccessPoints() is not None:
+      for nap in server.getNetworkAccessPoints():
+        nap_name = nap.getName()
+        listen_port = getRealListenPort(nap)
+        ssl_listen_port = getSSLPortIfEnabled(nap, self.env.getDomain(), is_server_template)
+
+        if listen_port == replication_port:
+          raise_replication_port_conflict(nap_name, listen_port, replication_port, '')
+
+        if ssl_listen_port == replication_port:
+          raise_replication_port_conflict(nap_name, ssl_listen_port, replication_port, 'SSL')
 
   def getLogOrNone(self,server):
     try:

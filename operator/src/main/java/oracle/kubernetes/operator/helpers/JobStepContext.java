@@ -62,6 +62,7 @@ public class JobStepContext extends BasePodStepContext {
   private static final String VOLUME_NAME_SUFFIX = "-volume";
   private static final String CONFIGMAP_TYPE = "cm";
   private static final String SECRET_TYPE = "st";
+  public static final String DEBUG_FIBER = "debugFiber";
   // domainTopology is null if this is 1st time we're running job for this domain
   private final WlsDomainConfig domainTopology;
   private V1Job jobModel;
@@ -70,7 +71,9 @@ public class JobStepContext extends BasePodStepContext {
   JobStepContext(Packet packet) {
     super(packet.getSpi(DomainPresenceInfo.class));
     domainTopology = packet.getValue(ProcessingConstants.DOMAIN_TOPOLOGY);
-    packet.put("debugFiber", Fiber.getCurrentIfSet());
+    final Fiber fiber = Fiber.getCurrentIfSet();
+    LOGGER.info("REG-> flagging fiber " + fiber);
+    packet.put(DEBUG_FIBER, fiber);
     init();
   }
 

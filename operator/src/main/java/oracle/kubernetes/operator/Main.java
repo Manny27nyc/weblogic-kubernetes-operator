@@ -85,8 +85,7 @@ public class Main {
   private NamespaceWatcher namespaceWatcher;
   protected OperatorEventWatcher operatorNamespaceEventWatcher;
   private boolean warnedOfCrdAbsence;
-  private static NextStepFactory NEXT_STEP_FACTORY =
-          (next) -> createInitializeInternalIdentityStep(next);
+  private static final NextStepFactory NEXT_STEP_FACTORY = Main::createInitializeInternalIdentityStep;
 
   private static String getConfiguredServiceAccount() {
     return TuningParameters.getInstance().get("serviceaccount");

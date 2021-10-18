@@ -40,6 +40,7 @@ import oracle.kubernetes.operator.helpers.EventHelper;
 import oracle.kubernetes.operator.helpers.EventHelper.EventData;
 import oracle.kubernetes.operator.helpers.EventHelper.EventItem;
 import oracle.kubernetes.operator.helpers.JobHelper;
+import oracle.kubernetes.operator.helpers.JobStepContext;
 import oracle.kubernetes.operator.helpers.KubernetesEventObjects;
 import oracle.kubernetes.operator.helpers.KubernetesUtils;
 import oracle.kubernetes.operator.helpers.NamespaceHelper;
@@ -1094,7 +1095,11 @@ public class DomainProcessorImpl implements DomainProcessor {
                 new CompletionCallback() {
                   @Override
                   public void onCompletion(Packet packet) {
-                    final String dump = Optional.ofNullable(packet.<Fiber>getValue("debugFiber"))
+                    dumpDebugFiber(packet);
+                  }
+
+                  private void dumpDebugFiber(Packet packet) {
+                    final String dump = Optional.ofNullable(packet.<Fiber>getValue(JobStepContext.DEBUG_FIBER))
                           .map(Fiber::getBreadCrumbString)
                           .orElse(null);
                     // no-op
@@ -1106,6 +1111,7 @@ public class DomainProcessorImpl implements DomainProcessor {
 
                   @Override
                   public void onThrowable(Packet packet, Throwable throwable) {
+                    dumpDebugFiber(packet);
                     logThrowable(throwable);
                   }
                 });

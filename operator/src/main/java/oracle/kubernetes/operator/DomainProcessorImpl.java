@@ -1067,6 +1067,12 @@ public class DomainProcessorImpl implements DomainProcessor {
         && KubernetesUtils.isFirstNewer(cachedInfo.getDomain().getMetadata(), liveInfo.getDomain().getMetadata());
   }
 
+  private void dumpDebugFiber(Packet packet) {
+    Optional.ofNullable(packet.<Fiber>getValue(JobStepContext.DEBUG_FIBER))
+          .map(Fiber::getBreadCrumbString).ifPresent(dump -> LOGGER.info("REG-> " + dump));
+
+  }
+
   @SuppressWarnings("unused")
   private void runDomainPlan(
       Domain dom,
@@ -1080,11 +1086,12 @@ public class DomainProcessorImpl implements DomainProcessor {
         new CompletionCallback() {
           @Override
           public void onCompletion(Packet packet) {
-            // no-op
+            dumpDebugFiber(packet);
           }
 
           @Override
           public void onThrowable(Packet packet, Throwable throwable) {
+            dumpDebugFiber(packet);
             logThrowable(throwable);
 
             gate.startFiberIfLastFiberMatches(
@@ -1095,23 +1102,11 @@ public class DomainProcessorImpl implements DomainProcessor {
                 new CompletionCallback() {
                   @Override
                   public void onCompletion(Packet packet) {
-                    dumpDebugFiber(packet);
                   }
 
-                  private void dumpDebugFiber(Packet packet) {
-                    final String dump = Optional.ofNullable(packet.<Fiber>getValue(JobStepContext.DEBUG_FIBER))
-                          .map(Fiber::getBreadCrumbString)
-                          .orElse(null);
-                    // no-op
-
-                    if (dump != null) {
-                      LOGGER.info("REG-> " + dump);
-                    }
-                  }
 
                   @Override
                   public void onThrowable(Packet packet, Throwable throwable) {
-                    dumpDebugFiber(packet);
                     logThrowable(throwable);
                   }
                 });

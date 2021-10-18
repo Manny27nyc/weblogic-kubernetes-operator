@@ -704,6 +704,7 @@ class ItConfigDistributionStrategy {
     HttpResponse<String> response = assertDoesNotThrow(() -> OracleHttpClient.get(dsOverrideTestUrl, true));
 
     assertEquals(200, response.statusCode(), "Status code not equals to 200");
+    logger.info("REG-> response: " + response.body());
     if (configUpdated) {
       assertTrue(response.body().contains("getMaxCapacity:12"), "Did get getMaxCapacity:12");
       assertTrue(response.body().contains("getInitialCapacity:2"), "Did get getInitialCapacity:2");

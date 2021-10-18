@@ -37,6 +37,7 @@ import oracle.kubernetes.operator.logging.LoggingFactory;
 import oracle.kubernetes.operator.logging.MessageKeys;
 import oracle.kubernetes.operator.utils.ChecksumUtils;
 import oracle.kubernetes.operator.wlsconfig.WlsDomainConfig;
+import oracle.kubernetes.operator.work.Fiber;
 import oracle.kubernetes.operator.work.NextAction;
 import oracle.kubernetes.operator.work.Packet;
 import oracle.kubernetes.operator.work.Step;
@@ -69,6 +70,7 @@ public class JobStepContext extends BasePodStepContext {
   JobStepContext(Packet packet) {
     super(packet.getSpi(DomainPresenceInfo.class));
     domainTopology = packet.getValue(ProcessingConstants.DOMAIN_TOPOLOGY);
+    packet.put("debugFiber", Fiber.getCurrentIfSet());
     init();
   }
 

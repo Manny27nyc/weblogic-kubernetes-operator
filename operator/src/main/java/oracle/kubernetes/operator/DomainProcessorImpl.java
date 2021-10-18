@@ -1094,7 +1094,14 @@ public class DomainProcessorImpl implements DomainProcessor {
                 new CompletionCallback() {
                   @Override
                   public void onCompletion(Packet packet) {
+                    final String dump = Optional.ofNullable(packet.<Fiber>getValue("debugFiber"))
+                          .map(Fiber::getBreadCrumbString)
+                          .orElse(null);
                     // no-op
+
+                    if (dump != null) {
+                      LOGGER.info("REG-> " + dump);
+                    }
                   }
 
                   @Override

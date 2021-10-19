@@ -127,7 +127,7 @@ public final class Fiber implements Runnable, ComponentRegistry, AsyncFiber, Bre
    *     final packet is available.
    */
   public void start(Step stepline, Packet packet, CompletionCallback completionCallback) {
-    LOGGER.info("REG-> starting thread with "
+    LOGGER.info("REG-> starting thread on fiber " + getName() + " with "
               + Optional.ofNullable(stepline).map(Step::getName).orElse("<--null-->")
               + '\n'
               + Arrays.stream(Thread.currentThread().getStackTrace())

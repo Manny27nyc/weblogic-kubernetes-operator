@@ -3,14 +3,19 @@
 
 package oracle.kubernetes.operator.work;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 import oracle.kubernetes.operator.ProcessingConstants;
+import oracle.kubernetes.operator.helpers.EventHelper;
+import oracle.kubernetes.operator.logging.LoggingFacade;
+import oracle.kubernetes.operator.logging.LoggingFactory;
 import oracle.kubernetes.operator.work.Fiber.CompletionCallback;
 
 /**
@@ -20,6 +25,7 @@ import oracle.kubernetes.operator.work.Fiber.CompletionCallback;
  * in-flight.
  */
 public class FiberGate {
+  private static final LoggingFacade LOGGER = LoggingFactory.getLogger("Operator", "Operator");
   private final Engine engine;
   private final ConcurrentMap<String, Fiber> gateMap = new ConcurrentHashMap<>();
 
@@ -128,6 +134,12 @@ public class FiberGate {
 
     public WaitForOldFiberStep(Fiber old, Step next) {
       super(next);
+      if (next instanceof EventHelper.CreateEventStep) {
+        LOGGER.info("REG-> " + Arrays.stream(Thread.currentThread().getStackTrace())
+                    .limit(6)
+                    .map(StackTraceElement::toString)
+                    .collect(Collectors.joining("\n")));
+      }
       this.old = new AtomicReference<>(old);
       current = new AtomicReference<>(this);
     }

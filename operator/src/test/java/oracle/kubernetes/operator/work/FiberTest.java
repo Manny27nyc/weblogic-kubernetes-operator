@@ -174,7 +174,7 @@ class FiberTest {
     runSteps(step1, suspend, step3);
     fiber.resume(packet);
 
-    assertThat(fiber.getBreadCrumbString(), allOf(containsString("Suspending]["), containsString("Basic (3)")));
+    assertThat(fiber.getBreadCrumbString(), allOf(containsString("Suspending]...["), containsString("Basic (3)")));
   }
 
   @Test

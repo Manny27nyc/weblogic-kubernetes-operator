@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -15,6 +16,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import oracle.kubernetes.operator.helpers.JobStepContext;
 import oracle.kubernetes.operator.logging.LoggingFacade;
 import oracle.kubernetes.operator.logging.LoggingFactory;
 import oracle.kubernetes.operator.logging.MessageKeys;
@@ -316,6 +318,12 @@ public final class Fiber implements Runnable, ComponentRegistry, AsyncFiber, Bre
     Thread.interrupted();
   }
 
+  private void dumpDebugFiber(Packet packet) {
+    Optional.ofNullable(packet)
+          .map(p -> p.<Fiber>getValue(JobStepContext.DEBUG_FIBER))
+          .map(Fiber::getBreadCrumbString).ifPresent(dump -> LOGGER.info("REG-> " + dump));
+  }
+
   private void completionCheck() {
     lock.lock();
     try {
@@ -332,6 +340,8 @@ public final class Fiber implements Runnable, ComponentRegistry, AsyncFiber, Bre
         if (LOGGER.isFinestEnabled()) {
           LOGGER.finest("{0} bread crumb: {1}", getName(), getBreadCrumbString());
         }
+
+        dumpDebugFiber(getPacket());
 
         try {
           if (s == NOT_COMPLETE && completionCallback != null) {

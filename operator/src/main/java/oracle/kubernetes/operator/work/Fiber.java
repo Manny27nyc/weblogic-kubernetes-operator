@@ -4,6 +4,7 @@
 package oracle.kubernetes.operator.work;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -126,6 +127,13 @@ public final class Fiber implements Runnable, ComponentRegistry, AsyncFiber, Bre
    *     final packet is available.
    */
   public void start(Step stepline, Packet packet, CompletionCallback completionCallback) {
+    LOGGER.info("REG-> starting thread with "
+              + Optional.ofNullable(stepline).map(Step::getName).orElse("<--null-->")
+              + '\n'
+              + Arrays.stream(Thread.currentThread().getStackTrace())
+                .limit(6)
+                .map(StackTraceElement::toString)
+                .collect(Collectors.joining("\n")));
     this.na = new NextAction();
     this.na.invoke(stepline, packet);
     this.completionCallback = completionCallback;

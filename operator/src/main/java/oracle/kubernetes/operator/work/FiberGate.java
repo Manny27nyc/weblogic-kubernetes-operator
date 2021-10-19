@@ -13,7 +13,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import oracle.kubernetes.operator.ProcessingConstants;
-import oracle.kubernetes.operator.helpers.EventHelper;
 import oracle.kubernetes.operator.logging.LoggingFacade;
 import oracle.kubernetes.operator.logging.LoggingFactory;
 import oracle.kubernetes.operator.work.Fiber.CompletionCallback;
@@ -134,12 +133,11 @@ public class FiberGate {
 
     public WaitForOldFiberStep(Fiber old, Step next) {
       super(next);
-      if (next instanceof EventHelper.CreateEventStep) {
-        LOGGER.info("REG-> " + Arrays.stream(Thread.currentThread().getStackTrace())
-                    .limit(6)
-                    .map(StackTraceElement::toString)
-                    .collect(Collectors.joining("\n")));
-      }
+      LOGGER.info("REG-> starting thread with " + next.getName() + '\n'
+                + Arrays.stream(Thread.currentThread().getStackTrace())
+                  .limit(6)
+                  .map(StackTraceElement::toString)
+                  .collect(Collectors.joining("\n")));
       this.old = new AtomicReference<>(old);
       current = new AtomicReference<>(this);
     }

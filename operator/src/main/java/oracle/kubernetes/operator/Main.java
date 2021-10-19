@@ -20,7 +20,6 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 
 import io.kubernetes.client.openapi.models.CoreV1EventList;
@@ -175,19 +174,18 @@ public class Main {
       return Optional.ofNullable(buildProps.getProperty(key)).orElse("unknown");
     }
 
-    private void logStartup(LoggingFacade loggingFacade) {
-      loggingFacade.info(MessageKeys.OPERATOR_STARTED, buildVersion, operatorImpl, operatorBuildTime);
+    private void logStartup() {
+      Main.LOGGER.info(MessageKeys.OPERATOR_STARTED, buildVersion, operatorImpl, operatorBuildTime);
       Optional.ofNullable(TuningParameters.getInstance().getFeatureGates().getEnabledFeatures())
-          .ifPresent(ef -> loggingFacade.info(MessageKeys.ENABLED_FEATURES, ef));
-      loggingFacade.info(MessageKeys.OP_CONFIG_NAMESPACE, getOperatorNamespace());
-      loggingFacade.info(MessageKeys.OP_CONFIG_SERVICE_ACCOUNT, serviceAccountName);
-      Optional.ofNullable(Namespaces.getConfiguredDomainNamespaces())
-            .ifPresent(strings -> logConfiguredNamespaces(loggingFacade, strings));
+          .ifPresent(ef -> Main.LOGGER.info(MessageKeys.ENABLED_FEATURES, ef));
+      Main.LOGGER.info(MessageKeys.OP_CONFIG_NAMESPACE, getOperatorNamespace());
+      Main.LOGGER.info(MessageKeys.OP_CONFIG_SERVICE_ACCOUNT, serviceAccountName);
+      Optional.ofNullable(Namespaces.getConfiguredDomainNamespaces()).ifPresent(this::logConfiguredNamespaces);
     }
 
-    private void logConfiguredNamespaces(LoggingFacade loggingFacade, Collection<String> configuredDomainNamespaces) {
-      loggingFacade.info(MessageKeys.OP_CONFIG_DOMAIN_NAMESPACES,
-          configuredDomainNamespaces.stream().collect(Collectors.joining(", ")));
+    private void logConfiguredNamespaces(Collection<String> configuredDomainNamespaces) {
+      Main.LOGGER.info(MessageKeys.OP_CONFIG_DOMAIN_NAMESPACES,
+            String.join(", ", configuredDomainNamespaces));
     }
 
     @Override
@@ -295,7 +293,7 @@ public class Main {
   static @Nonnull Main createMain(Properties buildProps) {
     final MainDelegateImpl delegate = new MainDelegateImpl(buildProps, wrappedExecutorService);
 
-    delegate.logStartup(LOGGER);
+    delegate.logStartup();
     return new Main(delegate);
   }
 

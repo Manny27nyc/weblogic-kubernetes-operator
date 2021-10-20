@@ -521,6 +521,7 @@ public class JobHelper {
 
       @Override
       public NextAction apply(Packet packet) {
+        LOGGER.info("REG-> proceeding now");
         if (getCurrentIntrospectFailureRetryCount() > 0) {
           reportIntrospectJobFailure();
         }

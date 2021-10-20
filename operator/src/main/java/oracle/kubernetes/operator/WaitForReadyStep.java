@@ -193,6 +193,7 @@ abstract class WaitForReadyStep<T> extends Step {
   // Registers a callback for updates to the specified resource and
   // verifies that we haven't already missed the update.
   private void resumeWhenReady(Packet packet, AsyncFiber fiber) {
+    LOGGER.info("REG-> checking if ready");
     Callback callback = new Callback(fiber, packet);
     addCallback(getResourceName(), callback);
     checkUpdatedResource(packet, fiber, callback);
@@ -292,6 +293,7 @@ abstract class WaitForReadyStep<T> extends Step {
     public void accept(T resource) {
       boolean shouldProcessCallback = shouldProcessCallback(resource);
       if (shouldProcessCallback) {
+        LOGGER.info("REG-> accepted callback and now processing it");
         proceedFromWait(resource);
       }
     }

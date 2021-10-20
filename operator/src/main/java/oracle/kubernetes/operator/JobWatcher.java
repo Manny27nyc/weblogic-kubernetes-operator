@@ -66,6 +66,7 @@ public class JobWatcher extends Watcher<V1Job> implements WatchListener<V1Job>, 
   }
 
   private void dispatchCallback(String jobName, V1Job job) {
+    LOGGER.info("REG-> received callback for " + jobName);
     Optional.ofNullable(completeCallbackRegistrations.get(jobName)).ifPresent(callback -> callback.accept(job));
   }
 
@@ -317,10 +318,13 @@ public class JobWatcher extends Watcher<V1Job> implements WatchListener<V1Job>, 
       return new DefaultResponseStep<>(null) {
         @Override
         public NextAction onSuccess(Packet packet, CallResponse<V1Job> callResponse) {
+          LOGGER.info("REG-> got a response. checking results");
           if (isReady(callResponse.getResult()) || callback.didResumeFiber()) {
+            LOGGER.info("REG-> proceeding with isReady = " + (isReady(callResponse.getResult())));
             callback.proceedFromWait(callResponse.getResult());
             return doNext(packet);
           }
+          LOGGER.info("REG-> not ready yet");
           return doDelay(createReadAndIfReadyCheckStep(callback), packet,
                   getWatchBackstopRecheckDelaySeconds(), TimeUnit.SECONDS);
         }

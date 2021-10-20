@@ -342,6 +342,7 @@ public class JobHelper {
       @Override
       public NextAction apply(Packet packet) {
         String jobPodName = (String) packet.get(ProcessingConstants.JOB_POD_NAME);
+        LOGGER.info("REG-> job pod name is " + jobPodName);
 
         return doNext(readDomainIntrospectorPodLog(jobPodName, getNext()), packet);
       }

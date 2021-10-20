@@ -349,7 +349,6 @@ public final class Fiber implements Runnable, ComponentRegistry, AsyncFiber, Bre
           LOGGER.finest("{0} bread crumb: {1}", getName(), getBreadCrumbString());
         }
 
-        dumpDebugFiber(getPacket());
 
         try {
           if (s == NOT_COMPLETE && completionCallback != null) {
@@ -367,6 +366,7 @@ public final class Fiber implements Runnable, ComponentRegistry, AsyncFiber, Bre
         }
       }
     } finally {
+      dumpDebugFiber(getPacket());
       lock.unlock();
     }
   }

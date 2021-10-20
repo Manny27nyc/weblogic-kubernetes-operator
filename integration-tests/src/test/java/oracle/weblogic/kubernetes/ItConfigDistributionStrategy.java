@@ -791,6 +791,7 @@ class ItConfigDistributionStrategy {
     //verify the introspector pod is created and runs
     logger.info("Verifying introspector pod is created, runs and deleted");
     String introspectPodName = getIntrospectJobName(domainUid);
+    logger.info("watching for pod " + introspectPodName);
     checkPodExists(introspectPodName, domainUid, domainNamespace);
     checkPodDoesNotExist(introspectPodName, domainUid, domainNamespace);
   }

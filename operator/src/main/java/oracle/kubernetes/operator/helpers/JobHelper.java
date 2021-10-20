@@ -317,17 +317,16 @@ public class JobHelper {
 
     // Returns a chain of steps which attempt to read the introspection result into a config map.
     private Step processIntrospectionResults() {
+      return new WatchDomainIntrospectorJobReadyStep(readIntrospectionResults());
+    }
+
+    private Step readIntrospectionResults() {
       return Step.chain(
-            waitForIntrospectionToComplete(),
             findIntrospectorPodName(),
             readNamedPodLog(),
             deleteIntrospectorJob(),
             createIntrospectorConfigMap()
             );
-    }
-
-    private Step waitForIntrospectionToComplete() {
-      return new WatchDomainIntrospectorJobReadyStep();
     }
 
     private Step findIntrospectorPodName() {

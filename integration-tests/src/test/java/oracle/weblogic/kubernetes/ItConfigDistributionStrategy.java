@@ -19,13 +19,17 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import io.kubernetes.client.custom.V1Patch;
+import io.kubernetes.client.openapi.ApiException;
 import io.kubernetes.client.openapi.models.V1Container;
 import io.kubernetes.client.openapi.models.V1EnvVar;
+import io.kubernetes.client.openapi.models.V1Job;
 import io.kubernetes.client.openapi.models.V1LocalObjectReference;
 import io.kubernetes.client.openapi.models.V1ObjectMeta;
 import io.kubernetes.client.openapi.models.V1PersistentVolumeClaimVolumeSource;
@@ -789,6 +793,17 @@ class ItConfigDistributionStrategy {
   //verify the introspector pod is created and run
   private void verifyIntrospectorRuns() {
     //verify the introspector pod is created and runs
+    logger.info("REG-> making sure introspector job is not hanging around");
+    try {
+      logger.info("REG-> found jobs in " + domainNamespace + ": "
+            + Kubernetes.listJobs(domainNamespace).getItems().stream()
+            .map(V1Job::getMetadata)
+            .filter(Objects::nonNull)
+            .map(V1ObjectMeta::getName)
+            .collect(Collectors.joining(", ")));
+    } catch (ApiException e) {
+      logger.warning("REG-> listJobs failed " + e);
+    }
     logger.info("Verifying introspector pod is created, runs and deleted");
     String introspectPodName = getIntrospectJobName(domainUid);
     logger.info("watching for pod " + introspectPodName);

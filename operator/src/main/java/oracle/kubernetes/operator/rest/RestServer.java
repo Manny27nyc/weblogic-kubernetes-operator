@@ -19,6 +19,7 @@ import io.kubernetes.client.util.SSLUtils;
 import oracle.kubernetes.operator.logging.LoggingFacade;
 import oracle.kubernetes.operator.logging.LoggingFactory;
 import oracle.kubernetes.operator.rest.resource.VersionsResource;
+import oracle.kubernetes.operator.rest.webhooks.WebhooksResource;
 import oracle.kubernetes.operator.work.Container;
 import oracle.kubernetes.operator.work.ContainerResolver;
 import org.apache.commons.codec.binary.Base64;
@@ -139,7 +140,7 @@ public class RestServer {
             .register(RequestDebugLoggingFilter.class)
             .register(ResponseDebugLoggingFilter.class)
             .register(ExceptionMapper.class)
-            .packages(VersionsResource.class.getPackageName());
+            .packages(VersionsResource.class.getPackageName(), WebhooksResource.class.getPackageName());
     rc.setProperties(Map.of(RestConfig.REST_CONFIG_PROPERTY, restConfig));
     return rc;
   }

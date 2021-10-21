@@ -314,7 +314,7 @@ public class JobWatcher extends Watcher<V1Job> implements WatchListener<V1Job>, 
     }
 
     @Override
-    protected DefaultResponseStep<V1Job> resumeIfReady(Callback callback) {
+    protected ResponseStep<V1Job> resumeIfReady(Callback callback) {
       return new DefaultResponseStep<>(null) {
         @Override
         public NextAction onSuccess(Packet packet, CallResponse<V1Job> callResponse) {

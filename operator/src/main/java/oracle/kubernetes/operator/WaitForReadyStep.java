@@ -237,9 +237,9 @@ abstract class WaitForReadyStep<T> extends Step {
 
   private class ReadAndIfReadyCheckStep extends Step {
     private final String resourceName;
-    private final ResponseStep responseStep;
+    private final ResponseStep<T> responseStep;
 
-    ReadAndIfReadyCheckStep(String resourceName, ResponseStep responseStep, Step next) {
+    ReadAndIfReadyCheckStep(String resourceName, ResponseStep<T> responseStep, Step next) {
       super(next);
       this.resourceName = resourceName;
       this.responseStep = responseStep;

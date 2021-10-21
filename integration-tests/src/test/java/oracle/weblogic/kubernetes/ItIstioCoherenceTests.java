@@ -47,6 +47,7 @@ import static oracle.weblogic.kubernetes.utils.CommonTestUtils.checkServiceExist
 import static oracle.weblogic.kubernetes.utils.ImageUtils.createImageAndVerify;
 import static oracle.weblogic.kubernetes.utils.ImageUtils.createOcirRepoSecret;
 import static oracle.weblogic.kubernetes.utils.ImageUtils.dockerLoginAndPushImageToRegistry;
+import static oracle.weblogic.kubernetes.utils.IstioUtils.verifyIstioInstallation;
 import static oracle.weblogic.kubernetes.utils.OperatorUtils.installAndVerifyOperator;
 import static oracle.weblogic.kubernetes.utils.PodUtils.checkPodReady;
 import static oracle.weblogic.kubernetes.utils.PodUtils.getPodCreationTime;
@@ -100,6 +101,10 @@ class ItIstioCoherenceTests {
   @BeforeAll
   public static void init(@Namespaces(2) List<String> namespaces) {
     logger = getLogger();
+
+    // Check Istio installation
+    logger.info("Check Istio installation");
+    assertTrue(verifyIstioInstallation());
 
     // get a new unique opNamespace
     logger.info("Assigning a unique namespace for Operator");

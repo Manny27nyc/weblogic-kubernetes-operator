@@ -62,6 +62,7 @@ import static oracle.weblogic.kubernetes.utils.ImageUtils.createOcirRepoSecret;
 import static oracle.weblogic.kubernetes.utils.ImageUtils.dockerLoginAndPushImageToRegistry;
 import static oracle.weblogic.kubernetes.utils.IstioUtils.deployHttpIstioGatewayAndVirtualservice;
 import static oracle.weblogic.kubernetes.utils.IstioUtils.getIstioHttpIngressPort;
+import static oracle.weblogic.kubernetes.utils.IstioUtils.verifyIstioInstallation;
 import static oracle.weblogic.kubernetes.utils.OperatorUtils.installAndVerifyOperator;
 import static oracle.weblogic.kubernetes.utils.PodUtils.checkPodExists;
 import static oracle.weblogic.kubernetes.utils.PodUtils.checkPodReady;
@@ -105,6 +106,11 @@ class ItIstioCrossClustersSetup {
   @BeforeAll
   public static void initAll() {
     logger = getLogger();
+    
+    // Check Istio installation
+    logger.info("Check Istio installation");
+    assertTrue(verifyIstioInstallation());
+
     List<String> clusterOneNamespaces = new ArrayList<>();
     clusterOneNamespaces.add(op1Namespace);
     clusterOneNamespaces.add(domain1Namespace);

@@ -66,6 +66,7 @@ import static oracle.weblogic.kubernetes.utils.ImageUtils.createImageAndVerify;
 import static oracle.weblogic.kubernetes.utils.ImageUtils.createOcirRepoSecret;
 import static oracle.weblogic.kubernetes.utils.ImageUtils.createSecretForBaseImages;
 import static oracle.weblogic.kubernetes.utils.ImageUtils.dockerLoginAndPushImageToRegistry;
+import static oracle.weblogic.kubernetes.utils.IstioUtils.verifyIstioInstallation;
 import static oracle.weblogic.kubernetes.utils.OperatorUtils.installAndVerifyOperator;
 import static oracle.weblogic.kubernetes.utils.PodUtils.checkPodExists;
 import static oracle.weblogic.kubernetes.utils.PodUtils.checkPodReady;
@@ -124,6 +125,10 @@ class ItIstioCrossClusters {
   @BeforeAll
   public static void initAll(@Namespaces(3) List<String> namespaces) {
     logger = getLogger();
+
+    // Check Istio installation
+    logger.info("Check Istio installation");
+    assertTrue(verifyIstioInstallation());
     try {
       FileInputStream in = new FileInputStream(PROPS_TEMP_DIR + "/" + WDT_MODEL_DOMAIN1_PROPS);
       Properties props = new Properties();
@@ -139,7 +144,6 @@ class ItIstioCrossClusters {
 
     assertNotNull(namespaces.get(0), "Namespace list is null");
     op2Namespace = namespaces.get(0);
-
 
     logger.info("Creating unique namespace for Domain");
     assertNotNull(namespaces.get(2), "Namespace list is null");

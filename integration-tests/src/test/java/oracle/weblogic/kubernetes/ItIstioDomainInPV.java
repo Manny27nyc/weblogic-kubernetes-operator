@@ -66,6 +66,7 @@ import static oracle.weblogic.kubernetes.utils.FileUtils.generateFileFromTemplat
 import static oracle.weblogic.kubernetes.utils.ImageUtils.createSecretForBaseImages;
 import static oracle.weblogic.kubernetes.utils.IstioUtils.deployHttpIstioGatewayAndVirtualservice;
 import static oracle.weblogic.kubernetes.utils.IstioUtils.getIstioHttpIngressPort;
+import static oracle.weblogic.kubernetes.utils.IstioUtils.verifyIstioInstallation;
 import static oracle.weblogic.kubernetes.utils.JobUtils.createDomainJob;
 import static oracle.weblogic.kubernetes.utils.OperatorUtils.installAndVerifyOperator;
 import static oracle.weblogic.kubernetes.utils.PatchDomainUtils.patchServerStartPolicy;
@@ -109,6 +110,11 @@ class ItIstioDomainInPV  {
   public static void initAll(@Namespaces(2) List<String> namespaces) {
 
     logger = getLogger();
+    
+    // Check Istio installation
+    logger.info("Check Istio installation");
+    assertTrue(verifyIstioInstallation());
+
     logger.info("Assign a unique namespace for operator");
     assertNotNull(namespaces.get(0), "Namespace is null");
     opNamespace = namespaces.get(0);

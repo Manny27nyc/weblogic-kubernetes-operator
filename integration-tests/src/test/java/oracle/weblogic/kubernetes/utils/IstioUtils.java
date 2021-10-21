@@ -41,6 +41,7 @@ import static oracle.weblogic.kubernetes.utils.PodUtils.setPodAntiAffinity;
 import static oracle.weblogic.kubernetes.utils.ThreadSafeLogger.getLogger;
 import static org.apache.commons.io.FileUtils.deleteDirectory;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -79,6 +80,39 @@ public class IstioUtils {
         Paths.get(RESULTS_ROOT, "uninstall-istio.sh"), 
         StandardCopyOption.REPLACE_EXISTING),
         "Copy uninstall-istio.sh to RESULTS_ROOT failed");
+  }
+
+  /**
+   * Check if sidecar injection is possible thru Istio control plane.  
+   * https://github.com/istio/istio/wiki/Troubleshooting-Istio#diagnostics
+   *
+   * Verify the Istio Istallation thru istioctl verify-install
+   *
+   * We do not verify istio istallation thru common istio istallation script, 
+   * since the failure to verify the installation will abort the entire run 
+   * which include non-istio tests. 
+   *
+   * So it is required to include the following method in beforeAll() for all
+   * ItIstio integration tests.
+   */
+  public static boolean verifyIstioInstallation() {
+    LoggingFacade logger = getLogger();
+    String command =
+        String.format("%s/istio-%s/bin/istioctl verify-install",
+                RESULTS_ROOT, ISTIO_VERSION);
+    logger.info("Verifying Istio installation thru command {0}", command);
+    try {
+      ExecResult result = ExecCommand.exec(command, true);
+      String response = result.stdout().trim();
+      logger.info("exitCode: {0}, \nSTDOUT: {1}, \nSTDERR: {2}",
+              result.exitValue(), response, result.stderr());
+      assertEquals(0, result.exitValue(), "Command didn't succeed");
+    } catch (IOException | InterruptedException ex) {
+      logger.severe(ex.getMessage());
+      return false;
+    }
+    logger.info("Istio installation verified successfully thru command {0}", command);
+    return true;
   }
 
   /**

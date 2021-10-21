@@ -11,7 +11,6 @@
 #  https://github.com/istio/istio/releases
 #  https://github.com/istio/istio/tags
 
-
 # Usage:
 #
 #  $0 [istio-version] [install-dir]
@@ -24,7 +23,7 @@ version=$1
 workdir=$2
 
 istiodir=${workdir}/istio-${version}
-echo "Installing Istio version [${version}] in location [${istiodir}]"
+echo "Installing Istio version [${version}] in location [${istiodir}]."
 
 kubectl delete namespace istio-system --ignore-not-found
 # istio installation will create the namespace 'istio-system' 
@@ -35,10 +34,24 @@ kubectl delete namespace istio-system --ignore-not-found
 )
 
 ( cd ${istiodir}
+
   bin/istioctl x precheck
+  if [ "x$?" == "x0" ]; then
+    echo "[istioctl precheck] command success."
+  else
+    echo "ERROR [istioctl precheck] command fails."
+    exit -1
+  fi 
+
   bin/istioctl install --set profile=demo --set hub=gcr.io/istio-release --set meshConfig.enablePrometheusMerge=false -y
-  bin/istioctl verify-install
-  bin/istioctl version
+   if [ "x$?" == "x0" ]; then
+    echo "[istioctl install] command success."
+    echo "istioctl version returns ..."
+    bin/istioctl version
+   else
+    echo "ERROR [istioctl install] command fails."
+    exit -1
+   fi 
 )
 }
 
@@ -52,20 +65,19 @@ fi
 
 istiodir=${workdir}/istio-${version}
 if [ -d ${istiodir} ]; then 
-   echo "Istio version [${version}] alreday installed at [${istiodir}]"
-   exit 0 
+     echo "Istio version [${version}] alreday installed at [${istiodir}]."
+     exit 0 
 else 
-   install_istio ${version} ${workdir}
-   # Additional check for Istio Service. 
-   # Make sure a not-null Service Port returned.
-   HTTP2_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="http2")].nodePort}')
-   if [ -z ${HTTP2_PORT} ]; then 
-     echo "Istio installation fails"
-     echo "Istio Http2 NodePort Service is not listening"
-     exit -1
-   else 
-     echo "Istio installation is SUCCESS"
-     echo "Http2 NodePort Service is listening on port [${HTTP2_PORT}]"
-     exit 0
-   fi
+     install_istio ${version} ${workdir}
+     # Additional check for Istio Service. 
+     # Make sure a not-null Service Port returned.
+     HTTP2_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="http2")].nodePort}')
+     if [ -z ${HTTP2_PORT} ]; then 
+       echo "Istio http2 NodePort Service is NOT listening."
+       exit -1
+     else 
+       echo "http2 NodePort Service is listening on port [${HTTP2_PORT}]."
+       echo "Additional istio check may be done thru [istioctl verify-install]."
+       exit 0
+     fi
 fi

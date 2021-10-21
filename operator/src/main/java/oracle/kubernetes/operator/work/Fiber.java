@@ -6,6 +6,7 @@ package oracle.kubernetes.operator.work;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -167,7 +168,7 @@ public final class Fiber implements Runnable, ComponentRegistry, AsyncFiber, Bre
    */
   @Override
   public void resume(Packet resumePacket) {
-    logWithStack("resuming fiber", getStatus());
+    logWithStack("resuming ", getStatus() + " fiber" + getChildren());
     if (status.get() == NOT_COMPLETE) {
 
       if (LOGGER.isFinerEnabled()) {
@@ -200,6 +201,13 @@ public final class Fiber implements Runnable, ComponentRegistry, AsyncFiber, Bre
         }
       }
     }
+  }
+
+  private String getChildren() {
+    return Optional.ofNullable(children).orElse(Collections.emptyList())
+          .stream()
+          .map(Fiber::toString)
+          .collect(Collectors.joining(", "));
   }
 
   private String getStatus() {
@@ -552,7 +560,7 @@ public final class Fiber implements Runnable, ComponentRegistry, AsyncFiber, Bre
 
   @Override
   public String toString() {
-    return getName();
+    return getName() + " " + getStatus();
   }
 
   /**

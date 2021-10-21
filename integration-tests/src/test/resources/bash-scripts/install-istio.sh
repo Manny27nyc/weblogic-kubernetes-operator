@@ -46,6 +46,8 @@ kubectl delete namespace istio-system --ignore-not-found
   bin/istioctl install --set profile=demo --set hub=gcr.io/istio-release --set meshConfig.enablePrometheusMerge=false -y
    if [ "x$?" == "x0" ]; then
     echo "[istioctl install] command success."
+    echo "[istioctl verify-install] returns"
+    bin/istioctl verify-install
     echo "istioctl version returns ..."
     bin/istioctl version
    else

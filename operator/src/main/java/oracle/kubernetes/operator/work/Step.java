@@ -171,6 +171,13 @@ public abstract class Step {
     return na;
   }
 
+  protected NextAction doNext(String comment, Step step, Packet packet) {
+    NextAction na = new NextAction();
+    na.annotate(comment);
+    na.invoke(step, packet);
+    return na;
+  }
+
   /**
    * Returns next action that will end the fiber processing.
    *

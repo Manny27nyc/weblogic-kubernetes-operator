@@ -217,13 +217,13 @@ public class JobHelper {
         if (isKnownFailedJob(job)) {
           return doNext(cleanUpAndReintrospect(), packet);
         } else if (job != null) {
-          LOGGER.info("REG-> found introspection job " + job.getMetadata().getName()
-                           + ", started at " + job.getMetadata().getCreationTimestamp());
-          return doNext(processIntrospectionResults(), packet);
+          final String comment = "found introspection job " + job.getMetadata().getName()
+                           + ", started at " + job.getMetadata().getCreationTimestamp();
+          return doNext(comment, processIntrospectionResults(), packet);
         } else if (isIntrospectionNeeded(packet)) {
-          return doNext(createIntrospectionSteps(), packet);
+          return doNext("introspection needed", createIntrospectionSteps(), packet);
         } else {
-          return doNext(packet);
+          return doNext("introspection not needed", getNext(), packet);
         }
       }
 
@@ -344,9 +344,8 @@ public class JobHelper {
       @Override
       public NextAction apply(Packet packet) {
         String jobPodName = (String) packet.get(ProcessingConstants.JOB_POD_NAME);
-        LOGGER.info("REG-> job pod name is " + jobPodName);
 
-        return doNext(readDomainIntrospectorPodLog(jobPodName, getNext()), packet);
+        return doNext("job pod name is " + jobPodName, readDomainIntrospectorPodLog(jobPodName, getNext()), packet);
       }
 
       private Step readDomainIntrospectorPodLog(String jobPodName, Step next) {
@@ -524,12 +523,11 @@ public class JobHelper {
 
       @Override
       public NextAction apply(Packet packet) {
-        LOGGER.info("REG-> proceeding now");
         if (getCurrentIntrospectFailureRetryCount() > 0) {
           reportIntrospectJobFailure();
         }
 
-        return doNext(listPodsInNamespace(getNamespace(), getNext()), packet);
+        return doNext("proceeding now", listPodsInNamespace(getNamespace(), getNext()), packet);
       }
 
       @Nonnull

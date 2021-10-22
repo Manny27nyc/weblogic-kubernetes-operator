@@ -4,6 +4,7 @@
 package oracle.kubernetes.operator.work;
 
 import java.time.OffsetDateTime;
+import java.util.Optional;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
@@ -22,6 +23,7 @@ public final class NextAction implements BreadCrumbFactory {
   Consumer<AsyncFiber> onExit;
   Throwable throwable;
   private OffsetDateTime created;
+  private String comment;
 
   private void set(Kind k, Step v, Packet p) {
     this.kind = k;
@@ -107,6 +109,10 @@ public final class NextAction implements BreadCrumbFactory {
         + ']';
   }
 
+  public void annotate(String comment) {
+    this.comment = comment;
+  }
+
   public enum Kind {
     INVOKE,
     SUSPEND,
@@ -133,6 +139,7 @@ public final class NextAction implements BreadCrumbFactory {
               sb.append("<at ").append(na.created).append(">, ");
             }
             sb.append(na.next.getName());
+            Optional.ofNullable(na.comment).ifPresent(comment -> sb.append("((REG-> ").append(comment).append("))"));
             dumper.dump(sb, na.packet);
           }
           break;

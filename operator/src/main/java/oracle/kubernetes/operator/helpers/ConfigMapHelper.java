@@ -332,7 +332,7 @@ public class ConfigMapHelper {
         } else if (isOutdated(existingMap)) {
           return doNext(replaceConfigMap(getNext()), packet);
         } else if (mustPatchCurrentMap(existingMap)) {
-          return doNext(patchCurrentMap(existingMap, getNext()), packet);
+          return doNext("patching config map", patchCurrentMap(existingMap, getNext()), packet);
         } else if (mustPatchImageHashInMap(existingMap, packet)) {
           return doNext(patchImageHashInCurrentMap(existingMap, packet, getNext()), packet);
         } else {

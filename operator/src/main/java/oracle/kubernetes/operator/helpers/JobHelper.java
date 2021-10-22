@@ -273,6 +273,8 @@ public class JobHelper {
       }
 
       private boolean isDomainGenerationChanged(Packet packet) {
+        LOGGER.info("REG-> checking domain generation: domain is at " + getDomainGeneration());
+        LOGGER.info("REG-> packet has " + packet.get(INTROSPECTION_DOMAIN_SPEC_GENERATION));
         return Optional.ofNullable(packet.get(INTROSPECTION_DOMAIN_SPEC_GENERATION))
                 .map(gen -> !gen.equals(getDomainGeneration())).orElse(true);
       }

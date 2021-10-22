@@ -3,8 +3,13 @@
 
 package oracle.kubernetes.operator.helpers;
 
+import java.util.Collections;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
+import io.kubernetes.client.common.KubernetesListObject;
+import io.kubernetes.client.common.KubernetesObject;
+import io.kubernetes.client.openapi.models.V1ObjectMeta;
 import oracle.kubernetes.operator.calls.AsyncRequestStep;
 import oracle.kubernetes.operator.calls.CallResponse;
 import oracle.kubernetes.operator.calls.RetryStrategy;
@@ -125,7 +130,16 @@ public abstract class ResponseStep<T> extends Step {
       // the next window of data.
       return resetRetryStrategyAndReinvokeRequest(packet);
     }
-    return doNext(next, packet);
+    if (callResponse.getResult() instanceof KubernetesListObject) {
+      return doNext("found: " + toComment((KubernetesListObject) callResponse.getResult()), next, packet);
+    } else {
+      return doNext(next, packet);
+    }
+  }
+
+  private String toComment(KubernetesListObject list) {
+    return Optional.ofNullable(list).map(KubernetesListObject::getItems).orElse(Collections.emptyList()).stream()
+          .map(KubernetesObject::getMetadata).map(V1ObjectMeta::getName).collect(Collectors.joining(", "));
   }
 
   /**

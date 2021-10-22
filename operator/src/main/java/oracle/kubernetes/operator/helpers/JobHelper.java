@@ -279,8 +279,8 @@ public class JobHelper {
       }
 
       private String getIntrospectionNotNeededReason(Packet packet) {
-        if (getNumRunningServers() == 0) {
-          return "num running servers is zero";
+        if (getNumRunningServers() != 0) {
+          return "num running servers is not zero";
         } else if (!creatingServers(info)) {
           return "should not be creating servers";
         } else {

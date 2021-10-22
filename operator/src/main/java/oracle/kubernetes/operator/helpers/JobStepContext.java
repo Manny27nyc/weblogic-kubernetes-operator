@@ -4,7 +4,6 @@
 package oracle.kubernetes.operator.helpers;
 
 import java.io.File;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -13,7 +12,6 @@ import java.util.Optional;
 import java.util.stream.IntStream;
 import javax.annotation.Nonnull;
 
-import com.google.gson.Gson;
 import io.kubernetes.client.openapi.models.V1ConfigMapVolumeSource;
 import io.kubernetes.client.openapi.models.V1Container;
 import io.kubernetes.client.openapi.models.V1EnvVar;
@@ -25,7 +23,6 @@ import io.kubernetes.client.openapi.models.V1PodTemplateSpec;
 import io.kubernetes.client.openapi.models.V1SecretVolumeSource;
 import io.kubernetes.client.openapi.models.V1Volume;
 import io.kubernetes.client.openapi.models.V1VolumeMount;
-import io.kubernetes.client.util.Yaml;
 import oracle.kubernetes.operator.DomainSourceType;
 import oracle.kubernetes.operator.DomainStatusUpdater;
 import oracle.kubernetes.operator.IntrospectorConfigMapConstants;
@@ -192,17 +189,8 @@ public class JobStepContext extends BasePodStepContext {
    * @return a step to be scheduled.
    */
   Step createJob() {
-    LOGGER.info("REG-> creating job with model " + dumpYaml(getJobModel()));
     conflictStep = new CallBuilder().createJobAsync(getNamespace(), getDomainUid(), getJobModel(), newCreateResponse());
     return conflictStep;
-  }
-
-  private static String dumpYaml(Object model) {
-    final Gson gson = new Gson();
-    Map<String,Object> map = gson.<Map<String,Object>>fromJson(gson.toJson(model), Map.class);
-    StringWriter writer = new StringWriter();
-    Yaml.dump(map, writer);
-    return writer.toString();
   }
 
   private void logJobCreated() {

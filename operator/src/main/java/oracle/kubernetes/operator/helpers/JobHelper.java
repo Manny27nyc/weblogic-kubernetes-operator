@@ -217,6 +217,8 @@ public class JobHelper {
         if (isKnownFailedJob(job)) {
           return doNext(cleanUpAndReintrospect(), packet);
         } else if (job != null) {
+          LOGGER.info("REG-> found introspection job " + job.getMetadata().getName()
+                           + ", started at " + job.getMetadata().getCreationTimestamp());
           return doNext(processIntrospectionResults(), packet);
         } else if (isIntrospectionNeeded(packet)) {
           return doNext(createIntrospectionSteps(), packet);

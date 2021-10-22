@@ -221,9 +221,11 @@ public class JobHelper {
                            + ", started at " + job.getMetadata().getCreationTimestamp();
           return doNext(comment, processIntrospectionResults(), packet);
         } else if (isIntrospectionNeeded(packet)) {
-          return doNext("introspection needed", createIntrospectionSteps(), packet);
+          return doNext("introspection needed because " + getIntrospectionNeededReason(packet),
+                createIntrospectionSteps(), packet);
         } else {
-          return doNext("introspection not needed", getNext(), packet);
+          return doNext("introspection not needed because " + getIntrospectionNotNeededReason(packet),
+                getNext(), packet);
         }
       }
 
@@ -264,6 +266,29 @@ public class JobHelper {
               || isIntrospectVersionChanged(packet);
       }
 
+      private String getIntrospectionNeededReason(Packet packet) {
+        if (getDomainTopology() == null) {
+          return "domain topology is null";
+        } else if (isBringingUpNewDomain(packet)) {
+          return "bringing up new domain";
+        } else if (isIntrospectionRequested(packet)) {
+          return "introspection was requested";
+        } else {
+          return "something else";
+        }
+      }
+
+      private String getIntrospectionNotNeededReason(Packet packet) {
+        if (getNumRunningServers() == 0) {
+          return "num running servers is zero";
+        } else if (!creatingServers(info)) {
+          return "should not be creating servers";
+        } else {
+          return "domain generation = " + getDomainGeneration()
+                + " and packet last generation is " + packet.get(INTROSPECTION_DOMAIN_SPEC_GENERATION);
+        }
+      }
+
       private boolean isBringingUpNewDomain(Packet packet) {
         return getNumRunningServers() == 0 && creatingServers(info) && isDomainGenerationChanged(packet);
       }
@@ -273,8 +298,6 @@ public class JobHelper {
       }
 
       private boolean isDomainGenerationChanged(Packet packet) {
-        LOGGER.info("REG-> checking domain generation: domain is at " + getDomainGeneration());
-        LOGGER.info("REG-> packet has " + packet.get(INTROSPECTION_DOMAIN_SPEC_GENERATION));
         return Optional.ofNullable(packet.get(INTROSPECTION_DOMAIN_SPEC_GENERATION))
                 .map(gen -> !gen.equals(getDomainGeneration())).orElse(true);
       }

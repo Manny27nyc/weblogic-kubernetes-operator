@@ -1241,15 +1241,15 @@ public class DomainProcessorImpl implements DomainProcessor {
     public NextAction apply(Packet packet) {
       registerDomainPresenceInfo(info);
 
-      return doNext(getNextSteps(), packet);
+      if (lookForPodsAndServices()) {
+        return doNext(getLookupSteps(), packet);
+      } else {
+        return doNext("assume presence up-to-date", getNext(), packet);
+      }
     }
 
-    private Step getNextSteps() {
-      if (lookForPodsAndServices()) {
-        return Step.chain(createStatusUpdateStep(null), getRecordExistingResourcesSteps(), getNext());
-      } else {
-        return getNext();
-      }
+    private Step getLookupSteps() {
+      return Step.chain(createStatusUpdateStep(null), getRecordExistingResourcesSteps(), getNext());
     }
 
     private boolean lookForPodsAndServices() {

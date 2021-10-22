@@ -6,10 +6,10 @@ package oracle.kubernetes.operator.helpers;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
 
 import io.kubernetes.client.common.KubernetesListObject;
 import io.kubernetes.client.common.KubernetesObject;
-import io.kubernetes.client.openapi.models.V1ObjectMeta;
 import oracle.kubernetes.operator.calls.AsyncRequestStep;
 import oracle.kubernetes.operator.calls.CallResponse;
 import oracle.kubernetes.operator.calls.RetryStrategy;
@@ -139,7 +139,17 @@ public abstract class ResponseStep<T> extends Step {
 
   private String toComment(KubernetesListObject list) {
     return Optional.ofNullable(list).map(KubernetesListObject::getItems).orElse(Collections.emptyList()).stream()
-          .map(KubernetesObject::getMetadata).map(V1ObjectMeta::getName).collect(Collectors.joining(", "));
+          .map(this::toElementString).collect(Collectors.joining(", "));
+  }
+
+  private String toElementString(KubernetesObject object) {
+    return toElementType(object) + ' ' + object.getMetadata().getName();
+  }
+
+  @Nonnull
+  private String toElementType(KubernetesObject object) {
+    final String[] parts = object.getClass().getSimpleName().split("(?<!^)(?=[A-Z])");
+    return parts.length == 1 ? parts[0].toLowerCase() : parts[1].toLowerCase();
   }
 
   /**

@@ -280,7 +280,8 @@ public class JobHelper {
 
       private String getIntrospectionNotNeededReason(Packet packet) {
         if (getNumRunningServers() != 0) {
-          return "num running servers is not zero";
+          return "have running servers: " + String.join(", ",
+                Optional.ofNullable(info).map(DomainPresenceInfo::getServerNames).orElse(Collections.emptyList()));
         } else if (!creatingServers(info)) {
           return "should not be creating servers";
         } else {

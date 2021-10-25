@@ -332,7 +332,7 @@ class ItOperatorWlsUpgrade {
     testUntil(
         checkCrdVersion(),
         logger,
-        "the CRD version to be updated to v8");
+        "the CRD version to be updated to v9");
 
     int externalRestHttpsPort = getServiceNodePort(opNamespace, "external-weblogic-operator-svc");
     assertTrue(externalRestHttpsPort != -1,

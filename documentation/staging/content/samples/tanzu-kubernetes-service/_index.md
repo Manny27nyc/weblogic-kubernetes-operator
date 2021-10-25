@@ -67,7 +67,7 @@ Kubernetes Operators use [Helm](https://helm.sh/) to manage Kubernetes applicati
 Clone the repository.
 
 ```shell
-$ git clone --branch v3.3.2 https://github.com/oracle/weblogic-kubernetes-operator.git
+$ git clone --branch v4.0.0 https://github.com/oracle/weblogic-kubernetes-operator.git
 ```
 ```shell
 $ cd weblogic-kubernetes-operator
@@ -452,7 +452,7 @@ Copy the following to a file called `/tmp/mii-sample/mii-initial.yaml` or simila
     #
     # This is an example of how to define a Domain resource.
     #
-    apiVersion: "weblogic.oracle/v8"
+    apiVersion: "weblogic.oracle/v9"
     kind: Domain
     metadata:
       name: sample-domain1

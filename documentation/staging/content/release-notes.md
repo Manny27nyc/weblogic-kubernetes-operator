@@ -8,6 +8,7 @@ draft: false
 
 | Date | Version | Introduces backward incompatibilities? | Change - See also, [Change log](#change-log). |
 | --- | --- | --- | --- |
+| TBD, 2021 | v4.0.0 | yes | TBD. |
 | September 24, 2021 | v3.3.2 | no | Istio 1.10 support, enhanced liveness and readiness probe customization to support customizing failure thresholds, and additional validations. |
 | August 23, 2021 | v3.3.1 | no | Resolved an issue related to managed Coherence cluster formation when using Istio and another issue related to Secret and ConfigMap validation. |
 | July 20, 2021 | v3.3.0 | no | Auxiliary image support. |
@@ -44,6 +45,9 @@ draft: false
 | March 20, 2018 |  | yes | Several files and input parameters have been renamed.  This affects how operators and domains are created.  It also changes generated Kubernetes artifacts, therefore customers must recreate their operators and domains.
 
 ### Change log
+
+#### Operator 4.0.0
+
 
 #### Operator 3.3.2
 

@@ -81,10 +81,9 @@ class ItIstioSessionMigrIstioGateway {
   private static String clusterName = "cluster-1";
   private static String adminServerPodName = domainUid + "-" + ADMIN_SERVER_NAME_BASE;
   private static String managedServerPrefix = domainUid + "-" + MANAGED_SERVER_NAME_BASE;
-  private static String finalPrimaryServerName = null;
-  private String configMapName = "dynamicupdate-istio-configmap";
-  private static int replicaCount = 2;
   private static int managedServerPort = 7100;
+  private String configMapName = "istio-configmap";
+  private static int replicaCount = 2;
 
   private static LoggingFacade logger = null;
 
